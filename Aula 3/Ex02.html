@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ex2</title>
+</head>
+<body>
+    <button id="voltar" type="button">Voltar</button>
+    <canvas id="canvas" width="300" height="250" style="border:solid 1px green">
+        Your browser does not support HTML5 Canvas.
+    </canvas>
+    <button id="limpar" type="button">Limpar</button>
+
+    <script>
+
+        const canvas = document.querySelector('#canvas');
+        const ctx = canvas.getContext('2d');
+
+        let varText = "";
+
+        function drawText() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "20px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(varText, canvas.width/2, canvas.height/2);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            varText += event.key;
+            drawText();
+        });
+
+        document.querySelector('#limpar').addEventListener('click', function() {
+            varText = "";
+            drawText();
+        });
+
+    </script>
+</body>
+</html>
