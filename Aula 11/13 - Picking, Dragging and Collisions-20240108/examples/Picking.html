@@ -1,0 +1,154 @@
+<html>
+
+<head>
+    <title>THREE.JS - Picking</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+
+<body>
+    <!-- HTML body will hold the Output -->
+    <script type="module">
+        import * as THREE from 'three';
+        // ORBIT CONTROLS utility (enable moving camera with mouse)
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+
+        let renderer = null,
+            scene = null,
+            camera = null;
+
+        let raycaster = new THREE.Raycaster();
+
+        // to store information about the cubes
+        let leftBox = {
+            mesh: null, angle: 0, spin: false
+        }
+        let rightBox = {
+            mesh: null, angle: 0, spin: false
+        }
+
+        window.onload = function init() {
+            // Create the Three.js renderer
+            renderer = new THREE.WebGLRenderer();
+            // Set the viewport 
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor("#888888");
+            document.body.appendChild(renderer.domElement);
+
+            // Create a new Three.js scene
+            scene = new THREE.Scene();
+
+            // Add  a camera so we can view the scene
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.x = 0;
+            camera.position.y = 50;
+            camera.position.z = 100;
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+            scene.add(camera);
+
+            // ORBIT CONTROLS
+            const controls = new OrbitControls(camera, renderer.domElement);
+
+            let pointLight = new THREE.PointLight(0xffffff, 5000);
+            pointLight.position.set(0, 50, 100);
+            scene.add(pointLight);
+          
+            let box_geom = new THREE.BoxGeometry(20, 20, 20);
+            let left_box_mat = new THREE.MeshLambertMaterial({ color: 0xff2211 });
+            leftBox.mesh = new THREE.Mesh(box_geom, left_box_mat);
+            leftBox.mesh.position.set(-50, 10, 0);
+            leftBox.mesh.name = "leftCube";
+            scene.add(leftBox.mesh);
+
+            let right_box_mat = new THREE.MeshLambertMaterial({ color: 0x22ff11 });
+            rightBox.mesh = new THREE.Mesh(box_geom, right_box_mat);
+            rightBox.mesh.position.set(50, 10, 0);
+            rightBox.mesh.name = "rightCube";
+            scene.add(rightBox.mesh);
+
+            let gridXZ = new THREE.GridHelper(100, 10, 0xff0000, 0xffffff);
+            scene.add(gridXZ);
+
+            // MOUSE EVENT
+            document.addEventListener("mousedown", onDocumentMouseDown);
+            window.addEventListener("resize", resize);
+
+            // Run the run loop
+            renderer.setAnimationLoop(render);
+        }
+
+        function render() {
+            if (leftBox.spin) {
+                leftBox.angle += 0.1;
+                if (leftBox.angle > 2 * Math.PI) {
+                    leftBox.angle = 0.0;
+                    leftBox.spin = false;
+                }
+                leftBox.mesh.rotation.y = leftBox.angle;
+            }
+            if (rightBox.spin) {
+                rightBox.angle += 0.1;
+                if (rightBox.angle > 2 * Math.PI) {
+                    rightBox.angle = 0.0;
+                    rightBox.spin = false;
+                }
+                rightBox.mesh.rotation.y = rightBox.angle;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+
+        function onDocumentMouseDown(event) {
+
+            // convert mouse.xy = [-1,1]^2 (NDC)
+            let mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+            // update the picking ray with the camera and mouse position
+            raycaster.setFromCamera(mouse, camera);
+            // calculate objects intersecting the picking ray
+            let intersects = raycaster.intersectObjects([rightBox.mesh, leftBox.mesh]);
+
+            console.log(intersects)
+            if (intersects.length > 0) {
+
+                if (intersects[0].object.name === "leftCube")
+                    leftBox.spin = true;
+                else if (intersects[0].object.name === "rightCube")
+                    rightBox.spin = true;
+            }
+
+        }
+
+
+
+        function resize() {
+            // this.width = this.container.offsetWidth;
+            // this.height = this.container.offsetHeight;
+            // renderer.setSize(document.body.offsetWidth, document.body.offsetHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+    </script>
+
+</body>
+
+</html>

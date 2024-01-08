@@ -1,0 +1,189 @@
+<html>
+
+<head>
+    <title>THREE.JS - Dragging</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+
+<body>
+    <!-- HTML body will hold the Output -->
+    <script type="module">
+        import * as THREE from 'three';
+        // ORBIT CONTROLS utility (enable moving camera with mouse)
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+
+        let renderer = null,
+            scene = null,
+            camera = null;
+
+        let controls = null;
+
+        let raycaster = new THREE.Raycaster();
+
+        let plane = null;   // Auxiliary plane to calculate mouse offset
+
+        let objects = [];    // array of objects to be dragged - the 2 cubes
+        let offset = new THREE.Vector3();
+        let selectedObject = null; // selected object
+
+        window.onload = function init() {
+
+
+            // Create the Three.js renderer
+            renderer = new THREE.WebGLRenderer();
+            // Set the viewport 
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor("#888888");
+            document.body.appendChild(renderer.domElement);
+
+            // Create a new Three.js scene
+            scene = new THREE.Scene();
+
+
+            // Add  a camera so we can view the scene
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.x = 0;
+            camera.position.y = 50;
+            camera.position.z = 100;
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+            scene.add(camera);
+
+            // ORBIT CONTROLS
+            controls = new OrbitControls(camera, renderer.domElement);
+
+            let pointLight = new THREE.PointLight(0xffffff, 5000);
+            pointLight.position.set(0, 50, 100);
+            scene.add(pointLight);
+
+            let left_box_geom = new THREE.BoxGeometry(20, 20, 20);
+            let left_box_mat = new THREE.MeshLambertMaterial({ color: 0xff2211 });
+            let leftBox = new THREE.Mesh(left_box_geom, left_box_mat);
+            leftBox.position.set(-50, 10, 0);
+            leftBox.name = "leftCube";
+            scene.add(leftBox);
+
+            objects.push(leftBox); // add mesh to list of draggable objects
+
+            let right_box_geom = new THREE.BoxGeometry(20, 20, 20);
+            let right_box_mat = new THREE.MeshLambertMaterial({ color: 0x22ff11 });
+            let rightBox = new THREE.Mesh(right_box_geom, right_box_mat);
+            rightBox.position.set(50, 10, 0);
+            rightBox.name = "rightCube";
+            scene.add(rightBox);
+
+            objects.push(rightBox); // add mesh to list of draggable objects
+
+            let gridXZ = new THREE.GridHelper(100, 10, 0xff0000, 0xffffff);
+            scene.add(gridXZ);
+
+
+            // "invisible" helper plane
+            plane = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 18, 18), new THREE.MeshBasicMaterial({
+                color: 0x00ff00,
+                opacity: 0.15,
+                transparent: true,
+                visible: true,
+                side: THREE.DoubleSide
+            }));
+            // a) auxiliary plane must be placed horizontally
+            plane.rotation.x = -Math.PI / 2
+            plane.position.z = -50;
+            //comment the above two lines for exercises b) and c)
+            scene.add(plane);
+
+            // MOUSE EVENTS
+            document.addEventListener("mousemove", onMouseMove, false);
+            document.addEventListener("mousedown", onMouseDown, false);
+            document.addEventListener("mouseup", onMouseUp, false);
+
+            // Run the run loop
+            renderer.setAnimationLoop(render);
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+
+        function onMouseMove(event) {
+
+            // convert mouse.xy = [-1,1]^2 (NDC)
+            let mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+            // update the picking ray with the camera and mouse position
+            raycaster.setFromCamera(mouse, camera);
+            // calculate objects intersecting the picking ray
+            let intersects = raycaster.intersectObjects(objects);
+
+            // if we've selected an object and are dragging it around
+            if (selectedObject) {
+
+                //drag an object around if we've already clicked on one
+                let intersects = raycaster.intersectObject(plane);
+                selectedObject.position.copy(intersects[0].point.sub(offset));
+            }
+            // // c) auxiliary plane must pass on the object's center
+            // else {
+            //     let intersects = raycaster.intersectObjects(objects);
+            //     if (intersects.length > 0) {
+            //         console.log("reposition the plane")
+            //         //reposition the plane
+            //         plane.position.copy(intersects[0].object.position);
+            //         //c) make sure the plane faces the camera 
+            //         plane.lookAt(camera.position);
+            //       }
+            // }
+        }
+
+        function onMouseDown(event) {
+            // convert mouse.xy = [-1,1]^2 (NDC)
+            let mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+            // update the picking ray with the camera and mouse position
+            raycaster.setFromCamera(mouse, camera);
+            // calculate objects intersecting the picking ray
+            let intersects = raycaster.intersectObjects(objects);
+
+            // console.log(intersects)
+            if (intersects.length > 0) {
+                //disable the orbit controller (drag the object around and not rotate the scene)
+                controls.enabled = false;
+                //assign the first intersected object to the selectedObject global variable
+                selectedObject = intersects[0].object;
+
+                // determine the offset between the point (in the plane) where we clicked and the center of the object
+                let intersectsPlane = raycaster.intersectObject(plane);
+                offset.copy(intersectsPlane[0].point).sub(selectedObject.position);
+            }
+        }
+
+        function onMouseUp(event) {
+            controls.enabled = true;
+            selectedObject = null;
+        }
+
+    </script>
+
+</body>
+
+</html>

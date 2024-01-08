@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Three.js - Tank</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			/* set margin to 0 and overflow to hidden, to use the complete page */
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
+	<script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+
+<body>
+	<!-- HTML body will hold the Output -->
+	<script type="module">
+		import * as THREE from 'three';
+		// ORBIT CONTROLS utility (enable moving camera with mouse)
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		let scene, camera, renderer;
+
+		let tank = {
+			//3D objects
+			base: null,
+			tower: null,
+			cannonPivot: null,
+			cannon: null,
+			//dimensions
+			baseLength: 7, baseWidth: 4, baseHeight: 1,
+			towerLength: 2, towerWidth: 2, towerHeight: 0.5,
+			cannonLength: 4, cannonWidth: 0.4, cannonHeight: 0.4,
+			//movement parameters
+			rotCannon: 0, rotTower: 0,
+			forward: false, right: false
+		}
+
+		let bbHelper; // helper for bounding box
+
+		let activeCamera = 0;
+
+		let walls = []; // static objects for collision
+
+		window.onload = function init() {
+
+			scene = new THREE.Scene();
+
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+			camera.position.set(0, 50, 70);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+
+			// ORBIT CONTROLS
+			let controls = new OrbitControls(camera, renderer.domElement);
+
+			/************ LIGHT *************/
+			// Add a directional light to show off the object
+			let light = new THREE.DirectionalLight(0xffffff, 1.5);
+			light.position.set(0.3, 0.6, 1);
+			scene.add(light);
+
+			/************ TANK TEXTURE *************/
+			let imageURL = "./textures/camouflage.jpg";
+			let texture = new THREE.TextureLoader().load(imageURL);
+
+			/************ BASE PLANE *************/
+			//plane
+			let geometry = new THREE.PlaneGeometry(100, 100);
+			let material = new THREE.MeshBasicMaterial({ color: 0x777777 });
+			let plane = new THREE.Mesh(geometry, material);
+			// rotate and position the plane
+			plane.rotation.x = -Math.PI / 2;
+			plane.position.y = -tank.baseHeight / 2;
+			scene.add(plane);
+
+			/************ TANK *************/
+			// Base
+			geometry = new THREE.BoxGeometry(tank.baseWidth, tank.baseHeight, tank.baseLength);
+			material = new THREE.MeshPhongMaterial({ color: 0x008800, map: texture });
+			tank.base = new THREE.Mesh(geometry, material);
+			tank.base.rotation.y = Math.PI;
+			tank.base.position.z = 30;
+			scene.add(tank.base);
+
+			// Tower
+			geometry = new THREE.BoxGeometry(tank.towerWidth, tank.towerHeight, tank.towerLength);
+			material = new THREE.MeshPhongMaterial({ color: 0xff0000, map: texture });
+			tank.tower = new THREE.Mesh(geometry, material);
+			tank.tower.position.set(0, tank.baseHeight / 2 + tank.towerHeight / 2, 0);
+			tank.base.add(tank.tower);
+
+			//Cannon
+			tank.cannonPivot = new THREE.Object3D();
+			tank.cannonPivot.position.set(0, 0, tank.towerHeight / 2);
+			tank.tower.add(tank.cannonPivot);
+
+			geometry = new THREE.BoxGeometry(tank.cannonWidth, tank.cannonHeight, tank.cannonLength);
+			material = new THREE.MeshPhongMaterial({ color: 0xffff00, map: texture });
+			tank.cannon = new THREE.Mesh(geometry, material);
+			tank.cannon.position.set(0, 0, tank.cannonLength / 2);
+			tank.cannonPivot.add(tank.cannon);
+
+			// just for visualization purposes (NOT required for collisions)
+			tank.base.geometry.computeBoundingBox();
+			bbHelper = new THREE.BoxHelper(tank.base, 0x00FFFF);
+			scene.add(bbHelper); // adds AABB to the scene
+
+
+			/************ OBSTACLES *************/
+			geometry = new THREE.BoxGeometry(2, 2, 2);
+			material = new THREE.MeshPhongMaterial({ color: 0xFFFF00 });
+			let wall1 = new THREE.Mesh(geometry, material);
+			wall1.position.set(0, 0, 10)
+			scene.add(wall1)
+			walls.push(wall1) // add the obstacles to the array (for collision detection)
+
+			geometry = new THREE.BoxGeometry(20, 10, 2);
+			material = new THREE.MeshPhongMaterial({ color: 0xFFFF00 });
+			let wall2 = new THREE.Mesh(geometry, material);
+			wall2.position.set(0, 0, -10)
+			scene.add(wall2)
+			walls.push(wall2) // add the obstacles to the array (for collision detection)
+
+
+			// Run the run loop
+			renderer.setAnimationLoop(render);
+		}
+
+		function render() {
+			/*** MOVE TANK BASE ***/
+			let oldRot = tank.base.rotation.y;
+			if (tank.right == 1) {
+				tank.base.rotation.y -= 0.01
+			}
+			else if (tank.right == -1) {
+				tank.base.rotation.y += 0.01
+			}
+			let result = checkCollisions2()
+			// console.log(result)
+			if (result) // undo rotation update if now it will be colliding
+				tank.base.rotation.y = oldRot;
+
+			let oldPos = tank.base.position.clone();
+			if (tank.forward == 1) {
+				tank.base.position.x += 0.1 * Math.sin(tank.base.rotation.y)
+				tank.base.position.z += 0.1 * Math.cos(tank.base.rotation.y)
+			}
+			else if (tank.forward == -1) {
+				tank.base.position.x -= 0.1 * Math.sin(tank.base.rotation.y)
+				tank.base.position.z -= 0.1 * Math.cos(tank.base.rotation.y)
+			}
+
+			result = checkCollisions2()
+			// console.log(result)
+			if (result) // undo movement update if now it will be colliding
+			{
+				tank.base.position.x = oldPos.x;
+				tank.base.position.z = oldPos.z;
+			}
+
+			/*** ROTATE TANK TOWER ***/
+			tank.tower.rotation.y = tank.rotTower;
+			/*** ROTATE TANK CANNON ***/
+			tank.cannonPivot.rotation.x = tank.rotCannon;
+
+			/*** CHANGE CAMERA PARAMETERS ***/
+			if (activeCamera == 0) {
+				camera.position.set(0, 50, 70);
+				camera.lookAt(new THREE.Vector3(0, 0, 0));
+			}
+			else if (activeCamera == 1) {
+				const relativeCameraOffset = new THREE.Vector3(0, 5, -15);
+				let cameraOffset = relativeCameraOffset.applyMatrix4(tank.base.matrixWorld);
+				camera.position.copy(cameraOffset);
+				camera.lookAt(tank.base.position);
+			}
+
+			//UPDATE BBOX HELPER
+			bbHelper.update();
+
+			renderer.render(scene, camera);
+		}
+
+		function checkCollisions() {
+			let tankBox = new THREE.Box3().setFromObject(tank.base);
+			for (let i = 0; i < walls.length; i++) {
+				let obstBox = new THREE.Box3().setFromObject(walls[i]);
+				let collision = tankBox.intersectsBox(obstBox);
+				if (collision) {
+					console.log("HIT")
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// collision detection:
+		//   determines if any of the rays from the cube's origin to each vertex
+		//      intersects any face of a mesh in the array of target meshes
+		//   for increased collision accuracy, add more vertices to the cube;
+		//      for example, new THREE.CubeGeometry( 64, 64, 64, 8, 8, 8, wireMaterial )
+		//   HOWEVER: when the origin of the ray is within the target mesh, collisions do not occur
+		function checkCollisions2() {
+			const ray = new THREE.Raycaster();
+			let originPoint = new THREE.Vector3;
+			tank.base.getWorldPosition(originPoint);
+			for (let i = 0; i < tank.base.geometry.attributes.position.count; i++) {
+				// get X, Y and X values for the vertex coordinates at the given index i
+				let x = tank.base.geometry.attributes.position.getX(i);
+				let y = tank.base.geometry.attributes.position.getY(i);
+				let z = tank.base.geometry.attributes.position.getZ(i);
+				let localVertex = new THREE.Vector3(x, y, z);
+				let globalVertex = localVertex.applyMatrix4(tank.base.matrixWorld);
+				let directionVector = globalVertex.sub(originPoint);
+
+				// updates the ray with a new origin and direction
+				ray.set(originPoint, directionVector.clone().normalize());
+				let collisionResults = ray.intersectObjects(walls);
+				if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
+					// console.log("HIT (2)");
+					return true;
+				}
+			}
+			return false;
+		}
+
+
+		//----------------------------------------------------------------------------
+		// Keyboard Event Functions
+		//----------------------------------------------------------------------------
+		document.addEventListener('keydown', (e) => {
+
+			let key = e.key;
+
+			/*** MOVE TANK BASE ***/
+			if (key == "w") {
+				tank.forward = 1;
+			}
+			if (key == "s") {
+				tank.forward = -1;
+			}
+			if (key == "d") {
+				tank.right = 1;
+			}
+			if (key == "a") {
+				tank.right = -1;
+			}
+
+			/*** ROTATE TANK TOWER ***/
+			if (key == "z") {
+				tank.rotTower += 0.005;
+			}
+			if (key == "x") {
+				tank.rotTower -= 0.005;
+			}
+
+			/*** ROTATE TANK CANNON ***/
+			if (key == "v") {
+				if (tank.rotCannon >= THREE.Math.degToRad(-90))
+					tank.rotCannon += -0.01;
+				else
+					tank.rotCannon = THREE.Math.degToRad(-90);
+			}
+			if (key == "b") {
+				if (tank.rotCannon <= THREE.Math.degToRad(0))
+					tank.rotCannon -= -0.01;
+				else
+					tank.rotCannon = THREE.Math.degToRad(0);
+			}
+
+			/*** CHANGE CAMERA ***/
+			if (key == "c") {
+				activeCamera = !activeCamera;
+			}
+
+		});
+
+
+		document.addEventListener('keyup', (e) => {
+			let key = e.key;
+
+			if (key == "w" || key == "s") {
+				tank.forward = 0;
+			}
+			if (key == "d" || key == "a") {
+				tank.right = 0;
+			}
+
+		});
+
+	</script>
+
+</body>
+
+</html>
