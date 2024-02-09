@@ -69,6 +69,19 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height); //erase Canvas
 
       //TODO
+      // Draw the following shape a house
+      // Use rect()to draw the house and two lines for the roof
+      // Use property linewidth(default = 1) to increase the line contours width
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "black";
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.rect(100, 30, 200, 150);
+      ctx.moveTo(100, 30);
+      ctx.lineTo(200, 0);
+      ctx.lineTo(300, 30);
+      ctx.stroke();
+      ctx.closePath();
     }
 
     const W = canvas.width, H = canvas.height;

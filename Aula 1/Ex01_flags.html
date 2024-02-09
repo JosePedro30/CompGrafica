@@ -31,23 +31,52 @@
   <script>
     const canvas1 = document.querySelector('#flag-germany'); 
     const ctx1 = canvas1.getContext('2d');
-    //TODO
+    // Drawing the flag of germany
+    ctx1.fillStyle = "black";
+    ctx1.fillRect(0, 0, 150, 25);
+    ctx1.fillStyle = "red";
+    ctx1.fillRect(0, 25, 150, 25);
+    ctx1.fillStyle = "yellow";
+    ctx1.fillRect(0, 50, 150, 25);
 
     const canvas2 = document.querySelector('#flag-Russia');
     const ctx2 = canvas2.getContext('2d');
-    //TODO
+    // Drawing the flag of russia
+    ctx2.fillStyle = "white";
+    ctx2.fillRect(0, 0, 150, 25);
+    ctx2.fillStyle = "blue";
+    ctx2.fillRect(0, 25, 150, 25);
+    ctx2.fillStyle = "red";
+    ctx2.fillRect(0, 50, 150, 25);
 
     const canvas3 = document.querySelector('#flag-sweden');
     const ctx3 = canvas3.getContext('2d');
-    //TODO
+    // Drawing the flag of sweden
+    ctx3.fillStyle = "blue";
+    ctx3.fillRect(0, 0, 160, 100);
+    ctx3.fillStyle = "yellow";
+    ctx3.fillRect(30, 0, 40, 100);
+    ctx3.fillStyle = "yellow";
+    ctx3.fillRect(0, 30, 160, 40);
 
     const canvas4 = document.querySelector('#flag-switzerland');
     const ctx4 = canvas4.getContext('2d');
-    //TODO
+    // Drawing the flag of switzerland
+    ctx4.fillStyle = "red";
+    ctx4.fillRect(0, 0, 170, 160);
+    ctx4.fillStyle = "white";
+    ctx4.fillRect(65, 20, 40, 120);
+    ctx4.fillRect(30, 60, 110, 40);
 
     const canvas5 = document.querySelector('#flag-france');
     const ctx5 = canvas5.getContext('2d');
-    //TODO
+    // Drawing the flag of france
+    ctx5.fillStyle = "blue";
+    ctx5.fillRect(0, 0, 150, 100);
+    ctx5.fillStyle = "white";
+    ctx5.fillRect(50, 0, 50, 100);
+    ctx5.fillStyle = "red";
+    ctx5.fillRect(100, 0, 50, 100);
     
   </script>
 </body>

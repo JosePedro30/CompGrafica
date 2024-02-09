@@ -34,7 +34,24 @@
     let D = document.querySelector('#D').value; //D square size
 
     function draw() {
-     // TODO
+      //get data from inputs
+      N = document.querySelector('#N').value; //N squares
+      D = document.querySelector('#D').value; //D square size
+
+      //clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      //draw squares
+      for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+          if ((i + j) % 2 == 0) {
+            ctx.fillStyle = "black";
+          } else {
+            ctx.fillStyle = "white";
+          }
+          ctx.fillRect(i * D, j * D, D, D);
+        }
+      }
     }
   </script>
 </body>

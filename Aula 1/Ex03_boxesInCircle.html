@@ -37,7 +37,17 @@
       //clears Canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      //TODO
+      //draws the circle
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, R, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      //draws the boxes
+      for (let i = 0; i < N; i++) {
+        let x = canvas.width / 2 + R * Math.cos(2 * Math.PI * i / N);
+        let y = canvas.height / 2 + R * Math.sin(2 * Math.PI * i / N);
+        ctx.fillRect(x - D / 2, y - D / 2, D, D);
+      }
 
     }
   </script>
