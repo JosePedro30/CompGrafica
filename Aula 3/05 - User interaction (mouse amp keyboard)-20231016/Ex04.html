@@ -36,6 +36,61 @@
             start = false;
         })
 
+        // The drawing only starts when user presses the mouse button. 
+        // Add two drop-down lists to customize color and line width.
+        // mousedown: starts drawing 
+        // mousemove: continues drawing
+        // mouseup: endsdrawing
+
+        let color = 'black';
+        let width = 1;
+
+        canvas.addEventListener('mousedown', e => {
+            start = true;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        })
+
+        canvas.addEventListener('mousemove', e => {
+            if (start) {
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = width;
+                ctx.stroke();
+            }
+        })
+
+        canvas.addEventListener('mouseup', e => {
+            start = false;
+        })
+
+        const colorSelect = document.createElement('select');
+        colorSelect.innerHTML = `
+            <option value="black">Black</option>
+            <option value="red">Red</option>
+            <option value="green">Green</option>
+            <option value="blue">Blue</option>
+        `;
+        
+        colorSelect.addEventListener('change', e => {
+            color = e.target.value;
+        })
+
+        const widthSelect = document.createElement('select');
+        widthSelect.innerHTML = `
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+        `;
+
+        widthSelect.addEventListener('change', e => {
+            width = e.target.value;
+        })
+
+        document.body.appendChild(colorSelect);
+        document.body.appendChild(widthSelect);
+
     </script>
 </body>
 </html>
