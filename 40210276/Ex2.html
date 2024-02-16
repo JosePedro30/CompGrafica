@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Exame</title>
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to use the complete page */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <!-- HTML body will hold the Output -->
+    <script type="module">
+
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        let renderer, scene, camera, cylinder, cylinder2, sphere;
+
+        // once everything is loaded, we run our Three.js stuff
+        window.onload = function init() {
+            /*********************
+             * SCENE 
+             * *******************/
+            // create an empty scene, that will hold all our elements such as objects, cameras and lights
+            scene = new THREE.Scene();
+
+            // create a camera, which defines where we're looking at
+            const aspect = window.innerWidth / window.innerHeight;
+            camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+            camera.position.y = 250;
+            camera.position.z = 250;
+            camera.lookAt(new THREE.Vector3(0, 50, 0));
+
+            /*********************
+             * RENDERER 
+             * *******************/
+            // create a render and set the size
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // configure renderer clear color
+            renderer.setClearColor("#000000");
+
+            // add the output of the renderer to an HTML element (this case, the body)
+            document.body.appendChild(renderer.domElement);
+
+            // Cilindro pequeno
+            const geometry = new THREE.CylinderGeometry(5, 5, 10, 32);
+            const material = new THREE.MeshBasicMaterial({ color: 0x808080 });
+            cylinder = new THREE.Mesh(geometry, material);
+            cylinder.position.y = 150;
+            scene.add(cylinder);
+
+            // Cilindro grande
+            const geometry2 = new THREE.CylinderGeometry(2.5, 2.5, 100, 32);
+            const material2 = new THREE.MeshBasicMaterial({ color: 0x808080 });
+            cylinder2 = new THREE.Mesh(geometry2, material2);
+            cylinder2.position.y = 100;
+            scene.add(cylinder2);
+
+            // Esfera
+            const texture = new THREE.TextureLoader().load('sphere.png');
+            const geometry3 = new THREE.SphereGeometry(15, 32, 32);
+            const material3 = new THREE.MeshBasicMaterial({ map: texture });
+            sphere = new THREE.Mesh(geometry3, material3);
+            sphere.position.y = 35;
+            scene.add(sphere);
+
+            // Plano
+            const texture2 = new THREE.TextureLoader().load('metal.jpg');
+            const texture3 = new THREE.TextureLoader().load('metal-normal.jpg');
+            const geometry4 = new THREE.PlaneGeometry(300, 300);
+            const material4 = new THREE.MeshBasicMaterial({ map: texture2, normalMap: texture3 });
+            const plane = new THREE.Mesh(geometry4, material4);
+            plane.rotation.x = -Math.PI / 2;
+            scene.add(plane);
+
+            // Luz
+            const light = new THREE.PointLight(0xffffff, 100000);
+            light.position.set(0, 300, 100);
+            scene.add(light);
+
+            // Sombras
+            plane.receiveShadow = true;
+            sphere.castShadow = true;
+            cylinder2.castShadow = true;
+            cylinder2.receiveShadow = true;
+            cylinder.castShadow = true;
+            cylinder.receiveShadow = true;
+
+            // Orbit controls
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.update();
+
+            // Run the render loop
+            renderer.setAnimationLoop(render);
+        }
+
+
+        function render() {
+            // Update properties of existing objects here if needed
+            // For example, you can modify the position, rotation, or scale of objects based on time or user input
+
+            // Render the scene
+            renderer.render(scene, camera);
+        }
+
+    </script>
+</body>
+
+</html>
