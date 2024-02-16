@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="500" height="500" style="border:solid 2px black">
+        Your browser does not support HTML5 Canvas.
+    </canvas>
+    
+    <script>
+        const canvas = document.querySelector('#myCanvas');
+        const ctx = canvas.getContext("2d");
+
+        const W = canvas.width, H = canvas.height;
+        //balls array
+        let b = new Array();
+
+        //INITIALIZE OBJECTS & START ANIMATION
+        window.onload = () => {
+            init();     //setup the array of 10 objects
+            render();   //start the animation
+        };
+
+        //CLASS BALL
+        class Ball {
+            constructor(x, y, r, vY, c) {       //constructor
+                this.R = r; //radius (random)
+                this.x = x; // initial X position
+                this.y = y; // initial Y position
+                this.dY = vY;   //vertical velocity (constant)
+                this.c = c;     //colour (random)
+            }
+
+            //update ball position (X,Y)
+            update() {
+                //check if ball passes the Canvas bottom
+                if (this.y > H + this.R) {
+                    this.y = -this.R; //reset the Y coordinate
+                    this.x = this.R + Math.random() * (W - 2 * this.R); //set a random X coordinate
+                }
+                else
+                    this.y += this.dY;  //constant vertical movement
+            }
+
+            //draw the circle
+            draw() {
+                ctx.fillStyle = this.c;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.R, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        // initialize the array with 10 instances of the Ball class
+        function init() {
+            for (let i = 0; i < 10; i++) {
+                //random color
+                let R = Math.floor(Math.random() * 256);
+                let G = Math.floor(Math.random() * 256);
+                let B = Math.floor(Math.random() * 256);
+                let color = `rgb(${R},${G},${B})`;
+
+                //random size
+                let radius = 10 + Math.random() * 20;
+
+                // random position (above the Canvas)
+                let xInit = radius + Math.random() * (W - 2 * radius);
+                let yInit = -radius;
+
+                //random velocity (between 1 and 6)
+                let velocity = 1 + Math.random() * 5;
+
+                // x, y, r, v, c
+                b.push(new Ball(xInit, yInit, radius, velocity, color))
+            }
+        }
+
+        //ANIMATION CYCLE
+        function render() {
+            //erase the Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //draw & update all balls
+            b.forEach(function (ball) {
+                ball.draw();
+                ball.update();
+            });
+
+            //new frame
+            window.requestAnimationFrame(render);
+        }
+    </script>
+</body>
+
+</html>

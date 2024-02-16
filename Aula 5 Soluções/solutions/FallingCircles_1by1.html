@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="500" height="500" style="border:solid 2px black">
+        Your browser does not support HTML5 Canvas.
+    </canvas>
+
+    <script>
+        const canvas = document.querySelector('#myCanvas');
+        const ctx = canvas.getContext("2d");
+
+        const W = canvas.width, H = canvas.height;
+
+        //balls array
+        let b = new Array();
+
+        //INITIALIZE OBJECTS & START ANIMATION
+        window.onload = () => {
+            addNewBall(); //add just 1 ball to the balls array
+            render();   //start the animation
+        };
+
+        //CLASS BALL
+        class Ball {
+            constructor(x, y, r, vY, c) {       //constructor
+                this.R = r; //radius
+                this.x = x; // initial X position
+                this.y = y; // initial Y position
+                this.dY = vY;           //vertical velocity
+                this.c = c;             //colour
+                this.hasStopped = false; //flag to indicate if the ball is moving or not
+            }
+
+            //update ball position (X,Y)
+            update() {
+                //check if ball collides with the Canvas bottom
+                if (this.y > H - this.R) {
+                    this.y = H - this.R; // adjust ball position to the Canvas bottom
+                    this.hasStopped = true; // indicates that ball is not moving anymore
+                }
+                else
+                    this.y += this.dY;  //constant vertical movement
+            }
+
+            //draw the circle
+            draw() {
+                ctx.fillStyle = this.c;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.R, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        // adds 1 instance (object) of the Ball class to the ball's array
+        function addNewBall() {
+            //random color
+            let R = Math.floor(Math.random() * 256);
+            let G = Math.floor(Math.random() * 256);
+            let B = Math.floor(Math.random() * 256);
+            let color = `rgb(${R},${G},${B})`;
+
+            //random size
+            let radius = 10 + Math.random() * 20;
+
+            // random position (above the Canvas)
+            let xInit = radius + Math.random() * (W - 2 * radius);
+            let yInit = -radius;
+
+            //random velocity
+            let velocity = 1 + Math.random() * 5;
+
+            // x, y, r, v, c
+            b.push(new Ball(xInit, yInit, radius, velocity, color))
+        }
+
+        //ANIMATION CYCLE
+        function render() {
+            //erase the Canvas
+            ctx.clearRect(0, 0, W, H);
+            //draw all balls
+            b.forEach(function (ball) {
+                ball.draw();
+            });
+
+            //updates ONLY the last ball in array (the only one that is actually moving)
+            b[b.length - 1].update();
+
+            //adds a new ball, ONLY IF the last one is flagged as stopped
+            if (b[b.length - 1].hasStopped == true)
+                addNewBall();
+
+            //new frame
+            window.requestAnimationFrame(render);
+        }
+    </script>
+</body>
+
+</html>

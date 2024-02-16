@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Three.js - Tank</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			/* set margin to 0 and overflow to hidden, to use the complete page */
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
+	<script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+
+<body>
+	<!-- HTML body will hold the Output -->
+	<script type="module">
+		import * as THREE from 'three';
+		// ORBIT CONTROLS utility (enable moving camera with mouse)
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		// GUI CONTROLS utility
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
+		let scene, camera, renderer, controls;
+
+		let tank = {
+			//3D objects
+			base: null,
+			tower: null,
+			cannonPivot: null,
+			cannon: null,
+			//dimensions
+			baseLength: 7, baseWidth: 4, baseHeight: 1,
+			towerLength: 2, towerWidth: 2, towerHeight: 0.5,
+			cannonLength: 4, cannonWidth: 0.4, cannonHeight: 0.4,
+			//movement parameters
+			rotCannon: 0, rotTower: 0,
+			forward: false, right: false
+		}
+
+		let bbHelper, bsHelper; // helper for bounding box
+
+		let activeCamera = 0;
+
+		window.onload = function init() {
+
+			scene = new THREE.Scene();
+
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+			camera.position.set(0, 50, 70);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+
+
+			/************ LIGHT *************/
+			// Add a directional light to show off the object
+			let light = new THREE.DirectionalLight(0xffffff, 1.5);
+			light.position.set(0.3, 0.6, 1);
+			scene.add(light);
+
+			/************ TANK TEXTURE *************/
+			let imageURL = "./textures/camouflage.jpg";
+			let texture = new THREE.TextureLoader().load(imageURL);
+
+			/************ BASE PLANE *************/
+			// //plane
+			// let geometry = new THREE.PlaneGeometry(100, 100);
+			// let material = new THREE.MeshBasicMaterial({ color: 0x777777 });
+			// let plane = new THREE.Mesh(geometry, material);
+			// // rotate and position the plane
+			// plane.rotation.x = -Math.PI / 2;
+			// plane.position.y = -tank.baseHeight / 2;
+			// scene.add(plane);
+
+			let gridXZ = new THREE.GridHelper(100, 10, 0x777777, 0x777777);
+			scene.add(gridXZ);
+
+			/************ TANK *************/
+			// Base
+			tank.base = new THREE.Mesh(
+				new THREE.BoxGeometry(tank.baseWidth, tank.baseHeight, tank.baseLength),
+				new THREE.MeshPhongMaterial({ color: 0x008800, map: texture }));
+			tank.base.rotation.y = Math.PI;
+			tank.base.position.z = 30;
+			scene.add(tank.base);
+
+			// Tower
+			tank.tower = new THREE.Mesh(
+				new THREE.BoxGeometry(tank.towerWidth, tank.towerHeight, tank.towerLength),
+				new THREE.MeshPhongMaterial({ color: 0xff0000, map: texture }));
+			tank.tower.position.set(0, tank.baseHeight / 2 + tank.towerHeight / 2, 0);
+			tank.base.add(tank.tower);
+
+			//Cannon
+			tank.cannonPivot = new THREE.Object3D();
+			tank.cannonPivot.position.set(0, 0, tank.towerHeight / 2);
+			tank.tower.add(tank.cannonPivot);
+
+			tank.cannon = new THREE.Mesh(
+				new THREE.BoxGeometry(tank.cannonWidth, tank.cannonHeight, tank.cannonLength),
+				new THREE.MeshPhongMaterial({ color: 0xffff00, map: texture }));
+			tank.cannon.position.set(0, 0, tank.cannonLength / 2);
+			tank.cannonPivot.add(tank.cannon);
+
+			// BOUNDING HELPERS - NOT REQUIRED FOR COLLISION DETECTION (just for visualization purposes)
+			if (tank.base.geometry.boundingBox === null)
+				tank.base.geometry.computeBoundingBox();
+			bbHelper = new THREE.BoxHelper(tank.base, 0x00FFFF);
+			scene.add(bbHelper); // adds AABB to the scene
+
+			if (tank.base.geometry.boundingSphere === null)
+				tank.base.geometry.computeBoundingSphere();
+			let bsphere = new THREE.Sphere();
+			bsphere.copy(tank.base.geometry.boundingSphere).applyMatrix4(tank.base.matrixWorld);
+
+			let bSphereGeometry = new THREE.SphereGeometry(bsphere.radius, 8, 8, 8);
+			let m = new THREE.MeshBasicMaterial({
+				color: 0xFFFF00, wireframe: true, transparent: true, opacity: 0.3
+			});
+			bsHelper = new THREE.Mesh(bSphereGeometry, m);
+			bsHelper.position.set(bsphere.center.x, bsphere.center.y, bsphere.center.z)
+			scene.add(bsHelper);
+			// END OF - BOUNDING HELPERS - NOT REQUIRED FOR COLLISION DETECTION (just for visualization purposes)
+
+
+			/**********************
+				Control panel
+			**********************/
+			const panel = new GUI();
+			let bbFolder = panel.addFolder('BoundingBox');
+			bbFolder.add(bbHelper, 'visible')
+			let bsFolder = panel.addFolder('BoundingSphere');
+			bsFolder.add(bsHelper, 'visible')
+
+			// Run the run loop
+			renderer.setAnimationLoop(render);
+		}
+
+		function render() {
+			/*** MOVE TANK BASE ***/
+			if (tank.right == 1) {
+				tank.base.rotation.y -= 0.01
+			}
+			else if (tank.right == -1) {
+				tank.base.rotation.y += 0.01
+			}
+			if (tank.forward == 1) {
+				tank.base.position.x += 0.1 * Math.sin(tank.base.rotation.y)
+				tank.base.position.z += 0.1 * Math.cos(tank.base.rotation.y)
+
+			}
+			else if (tank.forward == -1) {
+				tank.base.position.x -= 0.1 * Math.sin(tank.base.rotation.y)
+				tank.base.position.z -= 0.1 * Math.cos(tank.base.rotation.y)
+			}
+
+			/*** ROTATE TANK TOWER ***/
+			tank.tower.rotation.y = tank.rotTower;
+			/*** ROTATE TANK CANNON ***/
+			tank.cannonPivot.rotation.x = tank.rotCannon;
+
+			/*** CHANGE CAMERA PARAMETERS ***/
+			if (activeCamera == 0) {
+				camera.position.set(0, 50, 70);
+				camera.lookAt(new THREE.Vector3(0, 0, 0));
+			}
+			else if (activeCamera == 1) {
+				const relativeCameraOffset = new THREE.Vector3(0, 5, -15);
+				let cameraOffset = relativeCameraOffset.applyMatrix4(tank.base.matrixWorld);
+				camera.position.copy(cameraOffset);
+				camera.lookAt(tank.base.position);
+			}
+
+			//HELPERS FOR BOUNDING VOLUMES - just for visualization purposes
+			bbHelper.update();
+			bsHelper.position.set(
+				tank.base.position.x,
+				tank.base.position.y,
+				tank.base.position.z)
+
+			renderer.render(scene, camera);
+		}
+
+
+		//----------------------------------------------------------------------------
+		// Keyboard Event Functions
+		//----------------------------------------------------------------------------
+		document.addEventListener('keydown', (e) => {
+
+			let key = e.key;
+
+			/*** MOVE TANK BASE ***/
+			if (key == "w") {
+				tank.forward = 1;
+			}
+			if (key == "s") {
+				tank.forward = -1;
+			}
+			if (key == "d") {
+				tank.right = 1;
+			}
+			if (key == "a") {
+				tank.right = -1;
+			}
+
+			/*** ROTATE TANK TOWER ***/
+			if (key == "z") {
+				tank.rotTower += 0.005;
+			}
+			if (key == "x") {
+				tank.rotTower -= 0.005;
+			}
+
+			/*** ROTATE TANK CANNON ***/
+			if (key == "v") {
+				if (tank.rotCannon >= THREE.Math.degToRad(-90))
+					tank.rotCannon += -0.01;
+				else
+					tank.rotCannon = THREE.Math.degToRad(-90);
+			}
+			if (key == "b") {
+				if (tank.rotCannon <= THREE.Math.degToRad(0))
+					tank.rotCannon -= -0.01;
+				else
+					tank.rotCannon = THREE.Math.degToRad(0);
+			}
+
+			/*** CHANGE CAMERA ***/
+			if (key == "c") {
+				activeCamera = !activeCamera;
+			}
+
+		});
+
+
+		document.addEventListener('keyup', (e) => {
+			let key = e.key;
+
+			if (key == "w" || key == "s") {
+				tank.forward = 0;
+			}
+			if (key == "d" || key == "a") {
+				tank.right = 0;
+			}
+
+		});
+
+	</script>
+
+</body>
+
+</html>

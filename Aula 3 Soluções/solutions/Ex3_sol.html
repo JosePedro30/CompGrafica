@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>INTERACTIONS</title>
+</head>
+
+<body>
+    <canvas id="canvas" width="300" height="250" style="border:solid 1px green">
+        Your browser does not support HTML5 Canvas.
+    </canvas>
+
+    <script>
+        const canvas = document.querySelector("#canvas");
+        const ctx = canvas.getContext("2d");
+
+        const W = canvas.width, H = canvas.height;
+
+        window.addEventListener('keydown', keyPressed);
+        window.addEventListener('keyup', keyReleased);
+
+        //circle object
+        let circle = {
+            r: 20, x: W / 2, y: H / 2, color: 'blue', dirX: 0, dirY: 0
+        }
+
+        function keyPressed(e) {
+            if (e.key == 'ArrowRight')
+                circle.dirX = 1 // dirX == 1 -> moves right
+            if (e.key == 'ArrowLeft')
+                circle.dirX = -1 // dirX == -1 -> moves left
+
+            if (e.key == 'ArrowDown')
+                circle.dirY = 1 // dirY == 1 -> moves down
+            if (e.key == 'ArrowUp')
+                circle.dirY = -1 // dirY == 1 -> moves up
+
+            e.preventDefault();
+        }
+        function keyReleased(e) {
+            if (e.key == 'ArrowRight' || e.key == 'ArrowLeft')
+                circle.dirX = 0
+
+            if (e.key == 'ArrowDown' || e.key == 'ArrowUp')
+                circle.dirY = 0
+
+            e.preventDefault();
+        }
+
+        //ANIMATION CYCLE
+        function render() {
+            ctx.clearRect(0, 0, W, H);
+
+            //draw circle
+            ctx.fillStyle = circle.color
+            ctx.beginPath();
+            ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            //update circle (and detect Canvas boundaries)
+            if (circle.dirX == 1 && circle.x + circle.r < W)
+                circle.x++;
+            if (circle.dirX == -1 && circle.x - circle.r > 0)
+                circle.x--;
+
+            if (circle.dirY == 1 && circle.y + circle.r < H)
+                circle.y++;
+            if (circle.dirY == -1 && circle.y - circle.r > 0)
+                circle.y--;
+
+            window.requestAnimationFrame(render);
+        }
+
+        render();
+
+    </script>
+</body>
+
+</html>

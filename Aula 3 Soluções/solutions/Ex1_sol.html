@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>INTERACTIONS (mouse)</title>
+</head>
+
+<body>
+    <canvas id="canvas" width="300" height="250" style="border:solid 1px green">
+        Your browser does not support HTML5 Canvas.
+    </canvas>
+
+
+    <script>
+        const canvas = document.querySelector('#canvas');
+        const ctx = canvas.getContext("2d");
+
+        let x = 0, y = 0;
+        let start = false; //flag to set the beginning of line drawing 
+
+        // Add the event listener for mousemove to the Canvas element
+        canvas.addEventListener('mousemove', e => {
+            x = e.offsetX; y = e.offsetY;
+
+            if (!start) {   //if first time, start path
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                start = true;   
+            } else {    //if drawing already activated, draw lines
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+        });
+
+        // Add the event listener for mouseout (to re-start a new path)
+        canvas.addEventListener('mouseout', e => {
+            start = false;  
+        });
+
+    </script>
+</body>
+
+</html>

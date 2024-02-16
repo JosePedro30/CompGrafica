@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Sprite</title>
+</head>
+
+<body>
+	<canvas id="myCanvas" width="300" height="300" style="border:solid 3px blue">
+		Your browser does not support HTML5 Canvas.
+	</canvas>
+	<script>
+		const canvas = document.querySelector('#myCanvas');
+		const ctx = canvas.getContext("2d");
+
+		const W = canvas.width, H = canvas.height;
+
+		let images = {};
+		let totalResources = 6;
+		let numResourcesLoaded = 0;
+		let fps = 15;
+
+		loadImage("leftArm");
+		loadImage("legs");
+		loadImage("torso");
+		loadImage("rightArm");
+		loadImage("head");
+		loadImage("hair");
+
+		function loadImage(name) {
+			images[name] = new Image();
+			images[name].src = "images/" + name + ".png";
+			images[name].onload = function () {
+				resourceLoaded();	//only starts the animation after loading all 6 images			
+			};
+		}
+
+		function resourceLoaded() {
+			numResourcesLoaded++;
+			console.log(numResourcesLoaded + "...");
+
+			if (numResourcesLoaded == totalResources) {
+				setInterval(render, 1000 / fps); //start animation
+				console.log("... start animation!");
+			}
+		}
+
+
+		let x = 120;
+		let y = 250;
+		const breathInc = 0.5; 	//breath deviation in between frames
+		const breathMax = 4;		//maximum breath amplitude
+
+		function render() {
+			ctx.clearRect(0, 0, W, H); // clears the canvas 
+
+			ctx.drawImage(images["legs"], x, y);
+			
+			//TODO
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Sprite</title>
+</head>
+
+<body>
+	<canvas id="myCanvas" width="300" height="300" style="border:solid 3px blue">
+		Your browser does not support HTML5 Canvas.
+	</canvas>
+	<script>
+		const canvas = document.querySelector('#myCanvas');
+		const ctx = canvas.getContext("2d");
+
+		const W = canvas.width; const H = canvas.height;
+
+		let images = {};
+		//var totalResources = 6;
+		const totalResources = 9;
+		let numResourcesLoaded = 0;
+		const fps = 15;
+
+		loadImage("leftArm");
+		loadImage("legs");
+		loadImage("torso");
+		loadImage("rightArm");
+		loadImage("head");
+		loadImage("hair");
+		//jumping images
+		loadImage("leftArm-jump");
+		loadImage("legs-jump");
+		loadImage("rightArm-jump");
+
+		function loadImage(name) {
+			images[name] = new Image();
+			images[name].src = "images/" + name + ".png";
+			images[name].addEventListener('load', function () {
+				resourceLoaded();	//only starts the animation after all images are loaded
+			});
+		}
+
+		function resourceLoaded() {
+			numResourcesLoaded++;
+			if (numResourcesLoaded == totalResources) {
+				setInterval(redraw, 1000 / fps);
+			}
+			console.log(numResourcesLoaded);
+		}
+
+		//JUMP
+		let jumping = false;
+
+		function jump() {
+			console.log("start jump")
+			if (!jumping) {
+				jumping = true;
+				window.setTimeout(land, 200); //stops jump after 2 seconds
+			}
+		}
+		function land() {
+			console.log("stop jump")
+			jumping = false;
+		}
+		canvas.addEventListener('mousedown', jump);
+
+		let jumpHeight = 10;	//jump
+
+		let x = 120;
+		let y = 250;
+		let breathInc = 0.5; 	//breath deviation in between frames
+		let breathAmt = 0;		//actual breath amplitude
+		const breathMax = 4;		//maximum breath amplitude
+
+		function redraw() {
+			ctx.clearRect(0, 0, W, H); // clears the canvas 
+			if (jumping)
+				y -= jumpHeight;
+			else
+				y = 250;
+
+			//legs
+			if (jumping)
+				ctx.drawImage(images["legs-jump"], x, y - 8);
+			else
+				ctx.drawImage(images["legs"], x, y);
+			//left arm
+			if (jumping)
+				ctx.drawImage(images["leftArm-jump"], x + 40, y - 42 - breathAmt);
+			else
+				ctx.drawImage(images["leftArm"], x + 40, y - 42 - breathAmt);
+
+			ctx.drawImage(images["torso"], x, y - 50);
+			ctx.drawImage(images["head"], x - 10, y - 125 - breathAmt);
+			ctx.drawImage(images["hair"], x - 37, y - 138 - breathAmt);
+			//right arm
+			if (jumping)
+				ctx.drawImage(images["rightArm-jump"], x - 35, y - 42 - breathAmt);
+			else
+				ctx.drawImage(images["rightArm"], x - 15, y - 42 - breathAmt);
+
+			//eyes
+			ctx.beginPath();
+			ctx.arc(x + 47, y - 68 - breathAmt, 4, 0, 2 * Math.PI); // Left Eye
+			ctx.arc(x + 58, y - 68 - breathAmt, 4, 0, 2 * Math.PI); // Right Eye
+			ctx.fill();
+
+			//breath -> bouncing algorithm
+			breathAmt += breathInc;
+			if (breathAmt > breathMax || breathAmt < -breathMax) {
+				breathInc *= -1;
+			}
+
+		}
+	</script>
+</body>
+
+</html>

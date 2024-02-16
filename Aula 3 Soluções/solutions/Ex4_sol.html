@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>INTERACTIONS (mouse)</title>
+</head>
+
+<body>
+    <canvas id="canvas" width="300" height="250" style="border:solid 1px green">
+        Your browser does not support HTML5 Canvas.
+    </canvas>
+
+    <br /><br />
+    <button id="clearBtn" onclick="clean()">Clear Area</button>
+    Line width : <select id="selWidth" onchange="widthChange()">
+        <option value="1" selected="selected">1</option>
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="7">7</option>
+        <option value="9">9</option>
+        <option value="11">11</option>
+    </select>
+    Color : <select id="selColor" onchange="colorChange()">
+        <option value="black" selected="selected">black</option>
+        <option value="blue">blue</option>
+        <option value="red">red</option>
+        <option value="green">green</option>
+        <option value="yellow">yellow</option>
+        <option value="gray">gray</option>
+    </select>
+
+    <script>
+        const canvas = document.querySelector('#canvas');
+        const ctx = canvas.getContext("2d");
+
+        const W = canvas.width, H = canvas.height;
+        
+        //line color (event ONCHANGE from drop-down with ID selColor)
+        function colorChange(e) {
+            ctx.strokeStyle = document.querySelector('#selColor').value;
+        }
+       
+        //line width (event ONCHANGE from drop-down with ID selWidth)
+        function widthChange() {
+            ctx.lineWidth = document.querySelector('#selWidth').value;
+        }
+
+        //button event ONCLICK
+        function clean() {
+            console.log("CLEAR")
+            ctx.clearRect(0, 0, W, H);
+        }
+
+        let x = 0; let y = 0;
+        let start = false; //flag to set the beginning of line drawing
+
+        //event listener for mousedown
+        canvas.addEventListener('mousedown', e => {
+            x = e.offsetX; y = e.offsetY;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            start = true;   //inform that drawing has started
+        });
+
+        // event listener for mousemove
+        canvas.addEventListener('mousemove', e => {
+            x = e.offsetX; y = e.offsetY;
+
+            if (start) {    //only draw if user has pressed down the mouse button
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+        });
+
+        // Add the event listener for mouseup (to re-start a new path)
+        canvas.addEventListener('mouseup', e => {
+            start = false;
+        });
+
+    </script>
+</body>
+
+</html>

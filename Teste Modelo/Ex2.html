@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreeJs</title>
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to use the complete page */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Cria uma cena, usando as seguintes informações:
+        // Luzes: 1 luz ambiente de cor branca e 1 luz direcional(cor branca, posição (100,100,2), que produz sombras)
+        // Plano: centrado na cena, dimensões 500x200, material do tipo Lambert, de cor 0xCEE5C3; este plano recebe sombras.
+
+        // Configuração da câmera
+        camera.position.set(0, 0, 100);
+
+        // Configuração dos controles de órbita
+        controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+        controls.dampingFactor = 0.25;
+        controls.screenSpacePanning = false;
+        controls.maxPolarAngle = Math.PI / 2;
+
+        // Adiciona o evento de redimensionamento da janela
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Cria uma cena
+        const scene = new THREE.Scene();
+        // Cria uma câmera, que define o ponto de vista da cena
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // Cria um renderizador, que define como a cena será exibida
+        const renderer = new THREE.WebGLRenderer();
+        // Adiciona o renderizador na página
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        // Adiciona um controle de órbita, que permite mover a câmera ao redor da cena
+        const controls = new OrbitControls(camera, renderer.domElement);
+        // Adiciona uma luz ambiente
+        const light = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(light);
+        // Adiciona uma luz direcional
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(100, 100, 2);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+        // Adiciona um plano
+        const geometry = new THREE.PlaneGeometry(500, 200);
+        const material = new THREE.MeshLambertMaterial({ color: 0xCEE5C3 });
+        const plane = new THREE.Mesh(geometry, material);
+        plane.receiveShadow = true;
+        scene.add(plane);
+        
+        // Acrescente um radar na cena, assente no plano na posição (0,0,0).
+        // O radar é um objeto 3D hierárquico, composto pot 3 cilindros e uma esfera; no cilindro com compõe o disco do radar, coloque o valor true no parâmetro openEnded do construtor.
+        // Todas as malhas do radar devem receber sombras.
+
+        // Adiciona um radar
+        const radar = new THREE.Object3D();
+        const cylinderGeometry = new THREE.CylinderGeometry(10, 10, 1, 32);
+        const cylinderMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+        cylinder.castShadow = true;
+        cylinder.receiveShadow = true;
+        radar.add(cylinder);
+        const cylinderGeometry2 = new THREE.CylinderGeometry(10, 10, 1, 32);
+        const cylinderMaterial2 = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        const cylinder2 = new THREE.Mesh(cylinderGeometry2, cylinderMaterial2);
+        cylinder2.position.set(0, 0, 1);
+        cylinder2.castShadow = true;
+        cylinder2.receiveShadow = true;
+        radar.add(cylinder2);
+        const cylinderGeometry3 = new THREE.CylinderGeometry(1, 1, 1, 32);
+        const cylinderMaterial3 = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        const middleCylinder = new THREE.Mesh(cylinderGeometry3, cylinderMaterial3);
+        middleCylinder.position.set(0, 0, 2);
+        middleCylinder.castShadow = true;
+        middleCylinder.receiveShadow = true;
+        radar.add(middleCylinder);
+        const sphereGeometry = new THREE.SphereGeometry(10, 32, 32);
+        const sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(0, 0, 3);
+        sphere.castShadow = true;
+        sphere.receiveShadow = true;
+        radar.add(sphere);
+        scene.add(radar);
+        radar.position.set(-80, -60, 40);
+
+
+
+    </script>
+</body>
+</html>

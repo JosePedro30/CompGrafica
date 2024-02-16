@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>PATHS & LINES</title>
+  <style>
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <input type="button" value="EXERCISE 1" onclick="ex1()" />
+  <input type="button" value="EXERCISE 2" onclick="ex2()" />
+  <input type="button" value="EXERCISE 3" onclick="ex3()" />
+  <input type="button" value="EXERCISE 4" onclick="ex4()" />
+  <canvas id="myCanvas" width="500" height="200" style="border:solid 3px orange">
+    Your browser does not support HTML5 Canvas.
+  </canvas>
+
+  <script>
+    const canvas = document.querySelector("#myCanvas");
+    const ctx = canvas.getContext("2d");
+
+    //CANVAS SIZE
+    const W = canvas.width, H = canvas.height;
+
+    let running = false; //no animation
+
+    function ex1() {
+      running = false; //end animation (if any)
+      ctx.lineWidth = 1;
+
+      ctx.clearRect(0, 0, W, H); //erases Canvas
+
+      // filled blue rectangle
+      ctx.fillStyle = "blue";
+      ctx.beginPath();
+      ctx.moveTo(80, 20);
+      ctx.lineTo(280, 20);
+      ctx.lineTo(280, 120);
+      ctx.lineTo(80, 120);
+      ctx.fill();
+
+      // aqua rectangle (contoured)  
+      ctx.strokeStyle = "aqua";
+      ctx.beginPath();
+      ctx.moveTo(100, 40);  //1st point
+      ctx.lineTo(300, 40);
+      ctx.lineTo(300, 140);
+      ctx.lineTo(100, 140);
+      ctx.closePath(); 	//ends path - necessary if no line is draw to the 1st point
+      ctx.stroke();
+    }
+
+    function ex2() {
+      running = false; //end animation (if any)
+      ctx.lineWidth = 1;
+
+      ctx.clearRect(0, 0, W, H); //erases Canvas
+
+      ctx.strokeStyle = "red";
+      ctx.beginPath();
+      ctx.moveTo(50, 25);
+      ctx.lineTo(50, 125);
+      ctx.lineTo(150, 25);
+      ctx.lineTo(150, 125);
+      ctx.lineTo(250, 25);
+      ctx.lineTo(250, 125);
+      ctx.stroke();
+      //ctx.fill(); //uncomment and check what happens
+    }
+
+    function ex3() {
+      running = false; //end animation (if any)
+      ctx.clearRect(0, 0, W, H); //erases Canvas
+
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 5;
+
+      ctx.beginPath();
+      ctx.rect(20, 60, 60, 60);
+      ctx.moveTo(10, 70);
+      ctx.lineTo(50, 10);
+      ctx.lineTo(90, 70);
+
+      ctx.stroke();
+    }
+
+
+    function ex4() {
+      ctx.lineWidth = 1;
+      ctx.clearRect(0, 0, W, H); //erases Canvas
+      running = true;
+      render(); //start animation
+    }
+
+    function render() {
+      ctx.strokeStyle = getRandomColor();
+
+      //get coordinates for a random point INSIDE the Canvas
+      let randomX = Math.random() * W;
+      let randomY = Math.random() * H;
+
+      ctx.beginPath();  //new line (with a different color)
+      ctx.moveTo(W / 2, H / 2); //line start at Canvas center
+      ctx.lineTo(randomX, randomY); //line ends at random point
+      ctx.stroke(); //draw line
+
+      if (running) //continue animation 
+        window.requestAnimationFrame(render);
+    }
+
+    //helper function to generate a random color
+    function getRandomColor() {
+      let r = Math.floor(Math.random() * 256);
+      let g = Math.floor(Math.random() * 256);
+      let b = Math.floor(Math.random() * 256);
+
+      return `rgb(${r},${g},${b})`;
+    }
+
+  </script>
+</body>
+
+</html>

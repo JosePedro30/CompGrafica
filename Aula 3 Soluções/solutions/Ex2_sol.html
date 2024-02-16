@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>INTERACTIONS</title>
+</head>
+
+<body>
+    <canvas id="canvas" width="300" height="250" style="border:solid 1px green">
+        Your browser does not support HTML5 Canvas.
+    </canvas>
+
+    <input type="button" value="CLEAN" onclick="clean()">
+
+    <script>
+        const canvas = document.querySelector("#canvas");
+        const ctx = canvas.getContext("2d");
+
+        const W = canvas.width, H = canvas.height;
+
+        //text properties
+        ctx.font = 'bold 50px Serif';
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        let word = "";
+
+        window.addEventListener('keypress', KeyPress);
+
+        function KeyPress(e) {
+            ctx.clearRect(0, 0, W, H); //clears the Canvas
+    
+            word += e.key;  //add character to word
+            ctx.fillText(word, W/2, H/2);   //draw word
+
+            e.preventDefault();
+        }
+
+        function clean() {
+            ctx.clearRect(0, 0, W, H); //clears the Canvas
+            word = "";
+        }
+ 
+    </script>
+</body>
+
+</html>

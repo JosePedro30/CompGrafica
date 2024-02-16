@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Checkerboard</title>
+  <style>
+    canvas {
+      border: 3px solid orange;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <input type="button" value="DRAW" onclick="draw()"> </input>
+  Number of boxes <input type="number" value=5 min="3" max="10" id="N">
+
+  <canvas id="myCanvas" width="500" height="500">
+    Your browser does not support HTML5 Canvas.
+  </canvas>
+
+  <script>
+    //globals
+    const canvas = document.querySelector('#myCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const D = 20; //box dimension
+    const R = 100; //circle radius
+
+    ctx.fillStyle = "black";
+
+    function draw() {
+      //clears Canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      //OBTAIN NUMBER OF SQUARES FROM USER INPUT
+      const N = document.querySelector('#N').value;
+
+      //CIRCLE CENTER
+      const cX = canvas.width / 2;
+      const cY = canvas.height / 2;
+
+      //INITIAL ANGLE
+      let angle = 0;
+     
+      //DRAW N SQUARES
+      for (let i = 0; i < N; i++) {
+
+        // DETERMINE THE SQUARE (center) POSITION (using circle parametric equations)
+        let x = cX + R * Math.cos(angle);
+        let y = cY + R * Math.sin(angle);
+
+        //DRAW THE SQUARE
+        // center the square in the previously calculated point
+        ctx.fillRect(x - D / 2, y - D / 2, D, D);
+
+        //UPDATE ANGLE
+        // "slice" the circle into N equal parts
+        angle += 2 * Math.PI / N;
+      }
+
+    }
+  </script>
+</body>
+
+</html>

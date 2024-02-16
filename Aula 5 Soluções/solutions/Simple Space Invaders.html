@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Simple Space Invaders</title>
+</head>
+
+<body>
+  <canvas id="myCanvas" width="600" height="400" style="border:solid 1px blue">
+    Your browser does not support HTML5 Canvas.
+  </canvas>
+
+  <script type="module">
+    import Enemy from './Enemy.js';
+    import Player from './Player.js';
+
+    let canvas = document.querySelector('#myCanvas');
+    let ctx = canvas.getContext("2d");
+
+    const W = canvas.width, H = canvas.height;
+
+    //inicializar PLAYER
+    let player = new Player(ctx, W);
+    //inicializar INIMIGOS
+    let enemies = [];
+    for (var i = 0; i < 10; i++)
+      enemies.push(new Enemy(ctx, 50 + i * 50));
+
+
+    function render() {
+      //desenhar fundo preto
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, W, H);
+
+      //verifica colisões ANTES de desenhar
+      checkCollisions();
+
+      //desenhar player
+      player.draw();
+
+      //desenhar balas do player
+      player.drawBullets();
+
+      //desenhar inimigos
+      for (let i = 0; i < enemies.length; i++) {
+        if (enemies[i].state == "alive")
+          enemies[i].draw();
+        else {
+          // remove inimigo se tiver sido detetada colisão c/1 bala
+          enemies.splice(i, 1);
+          i--;
+        }
+      }
+
+
+      //atualizar player
+      if (player.move == "R")
+        player.moveRight();
+      else if (player.move == "L")
+        player.moveLeft();
+
+      //atualizar balas do player
+      player.updateBullets();
+
+      if (enemies.length > 0)
+        window.requestAnimationFrame(render)
+      else {
+        ctx.fillStyle = "white";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'bold 40px arial';
+        ctx.fillText("YOU WON", W / 2, H / 2);
+      }
+    }
+    //animar
+    render();
+
+    function checkCollision(enemy, bullet) {
+      // verifica colisão entre 1 inimigo e 1 bala
+      if (enemy.x + enemy.w < bullet.x ||
+        enemy.x > bullet.x + bullet.w ||
+        enemy.y + enemy.h < bullet.y ||
+        enemy.y > bullet.y + bullet.h
+      ) {
+        return false;
+      }
+      return true;
+
+    }
+
+    function checkCollisions() {
+      //percorre o array de inimigos 
+      for (let i = 0; i < enemies.length; i++) {
+        //percorre o array de balas 
+        for (let j = 0; j < player.bullets.length; j++)
+          //verifica se há colisão entre dois objetos (1 inimigo e 1 bala)
+          if (checkCollision(enemies[i], player.bullets[j])) {
+            //sinaliza futura remoção da bala
+            player.bullets[j].state = "dead";
+            //sinaliza futura remoção do inimigo
+            enemies[i].state = "dead";
+          }
+      }
+    }
+
+  
+    /*******************************************
+     * CONTROL PLAYER USING KEYS
+    *********************************************/
+    window.addEventListener('keydown', (e)=>{
+      e.preventDefault();
+      if (e.key == 'ArrowRight') /*seta para direita*/
+        player.move = "R";
+      if (e.key == 'ArrowLeft') /*seta para esquerda*/
+        player.move = "L";
+      if (e.keyCode == 32) /*space bar*/
+        player.createBullet();
+    });
+
+
+    window.addEventListener('keyup', (e) => {
+      e.preventDefault();
+      if (e.key == 'ArrowRight' && player.move == "R") /*seta para direita*/
+        player.move = "";
+      if (e.key == 'ArrowLeft' && player.move == "L") /*seta para esquerda*/
+        player.move = "";
+    });
+
+
+
+  </script>
+
+</body>
+
+</html>

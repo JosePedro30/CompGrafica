@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse</title>
+    <style>
+        canvas {
+          display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="myCanvas" width="500" height="400" style="border:solid 3px orange">
+        Your browser does not support HTML5 Canvas.
+    </canvas>
+    
+    <script>
+        const canvas = document.querySelector("#myCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Desenhe a face de um rato no centro do canvas, preenchida com a cor gray.
+        // A face do rato é um círculo com diâmetro de 50px.
+        // As orelhas são dois círculos com um diâmetro de 30px e os olhos têm 10px.
+        // A cor dos olhos é preta.
+
+        ctx.fillStyle = "gray";
+        ctx.beginPath();
+        ctx.arc(250, 200, 50, 0, 2 * Math.PI);
+        ctx.fill();
+        let x = 250 - 30;
+        let y = 200 - 30;
+        ctx.beginPath();
+        ctx.arc(x, y, 30, 0, 2 * Math.PI);
+        ctx.fill();
+        x = 250 + 30;
+        ctx.beginPath();
+        ctx.arc(x, y, 30, 0, 2 * Math.PI);
+        ctx.fill();
+        x = 250 - 20;
+        y = 200 - 20;
+        ctx.fillStyle = "black";
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        x = 250 + 20;
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        function draw() {
+            ctx.clearRect(0, 0, 500, 400);
+            ctx.fillStyle = "gray";
+            ctx.beginPath();
+            ctx.arc(250, 200, 50, 0, 2 * Math.PI);
+            ctx.fill();
+            let x = 250 - 30;
+            let y = 200 - 30;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 + 30;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 - 20;
+            y = 200 - 20;
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 + 20;
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        canvas.addEventListener("mousemove", draw);
+
+        // Usando uma animação com framerate de 50 fps, faça com que as extremidades dos bigodes se movam na vertical, num valor aleatório até +/- 4 pixeis por frame.
+        // A cor dos bigodes é preta e o comprimento de cada bigode é 50px.
+
+        let x1 = 250 - 25;
+        let y1 = 200 + 25;
+        let x2 = 250 + 25;
+        let y2 = 200 + 25;
+        let x3 = 250 - 25;
+        let y3 = 200 + 25;
+        let x4 = 250 + 25;
+        let y4 = 200 + 25;
+        function draw2() {
+            ctx.clearRect(0, 0, 500, 400);
+            ctx.fillStyle = "gray";
+            ctx.beginPath();
+            ctx.arc(250, 200, 50, 0, 2 * Math.PI);
+            ctx.fill();
+            let x = 250 - 30;
+            let y = 200 - 30;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 + 30;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 - 20;
+            y = 200 - 20;
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 + 20;
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1, y1 + 50);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2, y2 + 50);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x3, y3);
+            ctx.lineTo(x3, y3 + 50);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x4, y4);
+            ctx.lineTo(x4, y4 + 50);
+            ctx.stroke();
+            x1 = 250 - 25;
+            y1 = 200 + 25 + Math.floor(Math.random() * 9) - 4;
+            x2 = 250 + 25;
+            y2 = 200 + 25 + Math.floor(Math.random() * 9) - 4;
+            x3 = 250 - 25;
+            y3 = 200 + 25 + Math.floor(Math.random() * 9) - 4;
+            x4 = 250 + 25;
+            y4 = 200 + 25 + Math.floor(Math.random() * 9) - 4;
+        }
+        let timer = setInterval(draw2, 1000 / 50);
+
+        // Adicione a funcionalidade de acrescentar uma nova face (num máximo de 100 faces), com uma cor de preenchimento aleatória, cada vez que o utilizador clicar com o cursor do rato no canvas.
+
+        function draw3() {
+            ctx.clearRect(0, 0, 500, 400);
+            ctx.fillStyle = "gray";
+            ctx.beginPath();
+            ctx.arc(250, 200, 50, 0, 2 * Math.PI);
+            ctx.fill();
+            let x = 250 - 30;
+            let y = 200 - 30;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 + 30;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 - 20;
+            y = 200 - 20;
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            x = 250 + 20;
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1, y1 + 50);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2, y2 + 50);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x3, y3);
+            ctx.lineTo(x3, y3 + 50);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x4, y4);
+            ctx.lineTo(x4, y4 + 50);
+            ctx.stroke();
+            x1 = 250 - 25;
+            y1 = 200 + 25 + Math.floor(Math.random() * 9) - 4;
+            x2 = 250 + 25;
+            y2 = 200 + 25 + Math.floor(Math.random() * 9) - 4;
+            x3 = 250 - 25;
+            y3 = 200 + 25 + Math.floor(Math.random() * 9) - 4;
+            x4 = 250 + 25;
+            y4 = 200 + 25 + Math.floor(Math.random() * 9) - 4;
+        }
+        canvas.addEventListener("click", draw3);
+
+        
+    </script>
+
+</body>
+</html>
